@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/Users/dog/code/s3t/build",
+  "command": "/usr/bin/c++  -I/opt/homebrew/include  -arch arm64 -o CMakeFiles/main_app.dir/main.cpp.o -c /Users/dog/code/s3t/main.cpp",
+  "file": "/Users/dog/code/s3t/main.cpp",
+  "output": "CMakeFiles/main_app.dir/main.cpp.o"
+}
+]

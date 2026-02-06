@@ -1,4 +1,10 @@
-build/*
-!main_app
 CMakeLists.txt
 compile_commands.json
+.clangd
+
+.cache/
+
+build/*
+!build/main_app
+!build/Makefile
+

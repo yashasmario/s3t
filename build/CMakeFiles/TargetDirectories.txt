@@ -1,3 +1,0 @@
-/Users/dog/code/s3t/build/CMakeFiles/main_app.dir
-/Users/dog/code/s3t/build/CMakeFiles/edit_cache.dir
-/Users/dog/code/s3t/build/CMakeFiles/rebuild_cache.dir

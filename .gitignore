@@ -1,0 +1,4 @@
+build/*
+!main_app
+CMakeLists.txt
+compile_commands.json

@@ -117,41 +117,41 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named main_app
+# Target rules for targets named s3t
 
 # Build rule for target.
-main_app: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main_app
-.PHONY : main_app
+s3t: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 s3t
+.PHONY : s3t
 
 # fast build rule for target.
-main_app/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main_app.dir/build.make CMakeFiles/main_app.dir/build
-.PHONY : main_app/fast
+s3t/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/build
+.PHONY : s3t/fast
 
-main.o: main.cpp.o
-.PHONY : main.o
+s3t.o: s3t.cpp.o
+.PHONY : s3t.o
 
 # target to build an object file
-main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main_app.dir/build.make CMakeFiles/main_app.dir/main.cpp.o
-.PHONY : main.cpp.o
+s3t.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/s3t.cpp.o
+.PHONY : s3t.cpp.o
 
-main.i: main.cpp.i
-.PHONY : main.i
+s3t.i: s3t.cpp.i
+.PHONY : s3t.i
 
 # target to preprocess a source file
-main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main_app.dir/build.make CMakeFiles/main_app.dir/main.cpp.i
-.PHONY : main.cpp.i
+s3t.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/s3t.cpp.i
+.PHONY : s3t.cpp.i
 
-main.s: main.cpp.s
-.PHONY : main.s
+s3t.s: s3t.cpp.s
+.PHONY : s3t.s
 
 # target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/main_app.dir/build.make CMakeFiles/main_app.dir/main.cpp.s
-.PHONY : main.cpp.s
+s3t.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/s3t.cpp.s
+.PHONY : s3t.cpp.s
 
 # Help Target
 help:
@@ -161,10 +161,10 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... main_app"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
+	@echo "... s3t"
+	@echo "... s3t.o"
+	@echo "... s3t.i"
+	@echo "... s3t.s"
 .PHONY : help
 
 

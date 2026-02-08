@@ -129,29 +129,29 @@ s3t/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/build
 .PHONY : s3t/fast
 
-s3t.o: s3t.cpp.o
-.PHONY : s3t.o
+s3t_v1.o: s3t_v1.cpp.o
+.PHONY : s3t_v1.o
 
 # target to build an object file
-s3t.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/s3t.cpp.o
-.PHONY : s3t.cpp.o
+s3t_v1.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/s3t_v1.cpp.o
+.PHONY : s3t_v1.cpp.o
 
-s3t.i: s3t.cpp.i
-.PHONY : s3t.i
+s3t_v1.i: s3t_v1.cpp.i
+.PHONY : s3t_v1.i
 
 # target to preprocess a source file
-s3t.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/s3t.cpp.i
-.PHONY : s3t.cpp.i
+s3t_v1.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/s3t_v1.cpp.i
+.PHONY : s3t_v1.cpp.i
 
-s3t.s: s3t.cpp.s
-.PHONY : s3t.s
+s3t_v1.s: s3t_v1.cpp.s
+.PHONY : s3t_v1.s
 
 # target to generate assembly for a file
-s3t.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/s3t.cpp.s
-.PHONY : s3t.cpp.s
+s3t_v1.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/s3t.dir/build.make CMakeFiles/s3t.dir/s3t_v1.cpp.s
+.PHONY : s3t_v1.cpp.s
 
 # Help Target
 help:
@@ -162,9 +162,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... s3t"
-	@echo "... s3t.o"
-	@echo "... s3t.i"
-	@echo "... s3t.s"
+	@echo "... s3t_v1.o"
+	@echo "... s3t_v1.i"
+	@echo "... s3t_v1.s"
 .PHONY : help
 
 

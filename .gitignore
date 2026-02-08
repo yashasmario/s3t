@@ -5,6 +5,6 @@ compile_commands.json
 .cache/
 
 build/*
-!build/main_app
+!build/s3t
 !build/Makefile
 

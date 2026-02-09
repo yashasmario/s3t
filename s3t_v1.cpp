@@ -1,8 +1,10 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <cstdint>
+#include "iostream"
 #include "cmath"
 #include "string"
+#include "algorithm"
 
 using namespace std;
 
@@ -30,7 +32,7 @@ class game{
         uint64_t framerate = 60;
         
         int move = 0;
-        int gameData[9][9] = {-1};
+        int gameData[9][9];
 
         bool running = false;
             
@@ -43,11 +45,12 @@ class game{
             img = SDL_LoadPNG(path.c_str());
             if (img == nullptr){
                 SDL_Log("couldn't load texture: %s; SDL_Error: %s \n", path.c_str(), SDL_GetError());
+                img = SDL_LoadPNG("../img_error.png");
             }
-
             SDL_Texture *img_T = SDL_CreateTextureFromSurface(gameRenderer,img);
 
-            // remember to free this space to prevent memory leak
+            SDL_DestroySurface(img);
+            // remember to free the textrure memory as well;
             
             return img_T;
         }
@@ -56,6 +59,10 @@ class game{
             // -1 for no one has won, 0 for O victory, 1 for X victory
             
             return -1;
+        }
+
+        void ninetothree(){
+            
         }
 
         void renderData(){
@@ -71,27 +78,46 @@ class game{
             }
 
             // renderer:
-            SDL_SetRenderDrawColor(gameRenderer, 255, 255, 255, 255);
+            SDL_SetRenderDrawColor(gameRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(gameRenderer);
             
             // Draw the grid
             
             // Base drawing
             // add SUPER TIC TAC TOE Rules later
+            
+            // load both textures
+            string pathX = "../assets/x.png";
+            SDL_Texture *obj_X = loadTexture(pathX);
+
+            string pathO = "../assets/o.png";
+            SDL_Texture *obj_O = loadTexture(pathO);
+
+            // scale it down
+            SDL_FRect oRect;
+            oRect.h = (float) 100;
+            oRect.w = (float) 100;
+
+
             for (int i=0; i<9; i++){
                 for (int j=0; j<9; j++){
+
+                    oRect.x = 100*j;
+                    oRect.y = 100*i;
+
                     if (gameData[i][j] == 1){
-                        string path = "assets/x.png";
-                        SDL_Texture *obj_T = loadTexture(path);
-
-                        SDL_RenderTexture(gameRenderer, obj_T, nullptr, nullptr);
-
+                        SDL_RenderTexture(gameRenderer, obj_X, nullptr, &oRect);
                     }else if(gameData[i][j] == 0){
-                        string path = "assets/o.png";
-                        SDL_Texture *obj_T = loadTexture(path);
-
-                        SDL_RenderTexture(gameRenderer, obj_T, nullptr, nullptr);
+                        SDL_RenderTexture(gameRenderer, obj_O, nullptr, &oRect);
                     }else continue;
+                }
+            }
+
+            // draw the matrix (debugging)
+            for(int i=0; i<9; i++){
+                for(int j=0; j<9; j++){
+                    cout<<gameData[i][j]<<" ";
+                    if (j == 8) cout<<"\n";
                 }
             }
             SDL_RenderPresent(gameRenderer);
@@ -110,7 +136,6 @@ class game{
 
                     case SDL_EVENT_MOUSE_BUTTON_DOWN:
                         inputHandler(event);
-
                         // will only deal with left click
                         // might add keyboard input later for something like names
                         break;
@@ -131,9 +156,11 @@ class game{
                 // add a checker to check if there's already a symbol there
                 
                 int turn = move%2 == 0 ? 1 : 0;
-                gameData[indX][indY] = turn;
+                if (gameData[indY][indX] == -1){
+                    gameData[indY][indX] = turn;
+                    move++;
+                }
                 renderData();
-                move++;
             }
         }
         
@@ -142,6 +169,8 @@ class game{
 
     public:
         bool init(){
+            fill(&gameData[0][0], &gameData[0][0] + (9*9), -1);
+
             if(!SDL_CreateWindowAndRenderer("S3T", screenWidth, screenHeight, SDL_WINDOW_MOUSE_FOCUS, &gameWindow, &gameRenderer)){
                 SDL_Log("couldn't initialize window and renderer! SDL_Error: %s\n", SDL_GetError());
                 return false;
@@ -152,6 +181,7 @@ class game{
         }
 
         void run(){
+            renderData(); // replace this with renderMainMenu
             while (running){
                 if (gameState == GameState::playing){
                     SDL_Event event = eventLogger();

@@ -5,17 +5,15 @@
 #include "cmath"
 #include "string"
 #include "algorithm"
+#include "utility"
 
 using namespace std;
 
 enum class GameState{
     mainMenu,
     playing,
-    paused,
-    XWinScreen,
-    OWinScreen,
+    scoreScreen,
 };
-
 
 class game{
     private:
@@ -28,14 +26,17 @@ class game{
 
         const int screenWidth = 900;
         const int screenHeight = 900;
+        
+        // index of the current game
+        pair<int, int>currGame = {-1, -1};
 
         uint64_t framerate = 60;
         
         int move = 0;
-        int gameData[9][9];
+        int gameData9[9][9];
+        int gameData3[3][3];
 
         bool running = false;
-            
         
         // priv functions
         
@@ -55,14 +56,11 @@ class game{
             return img_T;
         }
 
+        // winChecker(int game[3][3])
         int winChecker(){
-            // -1 for no one has won, 0 for O victory, 1 for X victory
-            
-            return -1;
-        }
+            // -1 for no one has won, 0 for O victory, 1 for X victory, 2 for draw
 
-        void ninetothree(){
-            
+            return -1;
         }
 
         void renderData(){
@@ -70,21 +68,31 @@ class game{
             // WIN CONDITION LOGIC:
             
             if (winChecker() == 0){
-                gameState = GameState::OWinScreen;
                 SDL_Log("O Victory! Congratulations");
             }else if (winChecker() == 1){
-                gameState = GameState::XWinScreen;
                 SDL_Log("X Victory! Congratulations");
             }
 
             // renderer:
-            SDL_SetRenderDrawColor(gameRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+            SDL_SetRenderDrawColor(gameRenderer, 200, 200, 200, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(gameRenderer);
             
-            // Draw the grid
-            
-            // Base drawing
-            // add SUPER TIC TAC TOE Rules later
+            // Draw the thick lines
+            SDL_FRect lineH_T;
+            lineH_T.w = 900;
+            lineH_T.h = 3;
+
+            // highlighting currGame
+            if (currGame.first != -1 && currGame.second != -1){
+                SDL_SetRenderDrawColor(gameRenderer, 220, 220, 220, SDL_ALPHA_OPAQUE);
+                SDL_FRect *currGameShader;
+                currGameShader->h = currGameShader->w = 300;
+                currGameShader->x = (int) currGame.first * 300;
+                currGameShader->y = (int) currGame.second * 300;
+                
+                SDL_RenderFillRect(gameRenderer, currGameShader);
+                SDL_RenderRect(gameRenderer, currGameShader);
+            }
             
             // load both textures
             string pathX = "../assets/x.png";
@@ -102,12 +110,20 @@ class game{
             for (int i=0; i<9; i++){
                 for (int j=0; j<9; j++){
 
+                    // drawing grid
+                    SDL_SetRenderDrawColor(gameRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+                    //vertical
+                    SDL_RenderLine(gameRenderer, j*100, 0, j*100, 900);
+                    // horizontal
+                    SDL_RenderLine(gameRenderer, 0, j*100, 900, j*100);
+
+                    // rendering o's and x's
                     oRect.x = 100*j;
                     oRect.y = 100*i;
 
-                    if (gameData[i][j] == 1){
+                    if (gameData9[i][j] == 1){
                         SDL_RenderTexture(gameRenderer, obj_X, nullptr, &oRect);
-                    }else if(gameData[i][j] == 0){
+                    }else if(gameData9[i][j] == 0){
                         SDL_RenderTexture(gameRenderer, obj_O, nullptr, &oRect);
                     }else continue;
                 }
@@ -116,7 +132,7 @@ class game{
             // draw the matrix (debugging)
             for(int i=0; i<9; i++){
                 for(int j=0; j<9; j++){
-                    cout<<gameData[i][j]<<" ";
+                    cout<<gameData9[i][j]<<" ";
                     if (j == 8) cout<<"\n";
                 }
             }
@@ -145,7 +161,7 @@ class game{
         }
 
         void inputHandler(SDL_Event event){
-            if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN){
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && gameState == GameState::playing){
                 SDL_Log("event: Mouse button down");
                 if (event.button.windowID != gameWindowID) return;
                 float posX = event.button.x;
@@ -153,13 +169,22 @@ class game{
                 int indX = floor((posX*9)/900);
                 int indY = floor((posY*9)/900);
 
-                // add a checker to check if there's already a symbol there
-                
                 int turn = move%2 == 0 ? 1 : 0;
-                if (gameData[indY][indX] == -1){
-                    gameData[indY][indX] = turn;
+
+                // if (currGame.first == -1 && currGame.second == -1){
+                //    currGame.first = indX%3;
+                //    currGame.second = indY%3;
+                //}
+                
+                
+                // add conditionals to restrict move to currGame
+                if (gameData9[indY][indX] == -1){
+                    gameData9[indY][indX] = turn;
                     move++;
+                    currGame.first = indX%3;
+                    currGame.second = indY%3;
                 }
+
                 renderData();
             }
         }
@@ -169,7 +194,8 @@ class game{
 
     public:
         bool init(){
-            fill(&gameData[0][0], &gameData[0][0] + (9*9), -1);
+            fill(&gameData9[0][0], &gameData9[0][0] + (9*9), -1);
+            fill(&gameData3[0][0], &gameData3[0][0] + (3*3), -1);
 
             if(!SDL_CreateWindowAndRenderer("S3T", screenWidth, screenHeight, SDL_WINDOW_MOUSE_FOCUS, &gameWindow, &gameRenderer)){
                 SDL_Log("couldn't initialize window and renderer! SDL_Error: %s\n", SDL_GetError());
@@ -183,18 +209,23 @@ class game{
         void run(){
             renderData(); // replace this with renderMainMenu
             while (running){
-                if (gameState == GameState::playing){
-                    SDL_Event event = eventLogger();
+                SDL_Event event = eventLogger();
+                switch(gameState){
+                    case GameState::mainMenu:
+                        break;
+                    case GameState::playing:
+                        break;
+                    case GameState::scoreScreen:
+                        break;
                 }
             }
         }
 
-
         void close(){
-            SDL_DestroyWindow(gameWindow);
-            gameWindow = nullptr;
             SDL_DestroyRenderer(gameRenderer);
             gameRenderer = nullptr;
+            SDL_DestroyWindow(gameWindow);
+            gameWindow = nullptr;
             // todo free memory an stuff
         }
 };

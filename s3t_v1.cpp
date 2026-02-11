@@ -37,9 +37,8 @@ class game{
         int gameData3[3][3];
 
         bool running = false;
-        
+
         // priv functions
-        
         SDL_Texture* loadTexture(string path){
             // load texture from img
             SDL_Surface* img = nullptr;
@@ -52,7 +51,6 @@ class game{
 
             SDL_DestroySurface(img);
             // remember to free the textrure memory as well;
-            
             return img_T;
         }
 
@@ -61,6 +59,12 @@ class game{
             // -1 for no one has won, 0 for O victory, 1 for X victory, 2 for draw
 
             return -1;
+        }
+            
+        // no clue how to do this more effieciently
+        void drawThickL(float x1, float y1, float x2, float y2){
+            SDL_FRect tl;
+            
         }
 
         void renderData(){
@@ -76,25 +80,20 @@ class game{
             // renderer:
             SDL_SetRenderDrawColor(gameRenderer, 200, 200, 200, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(gameRenderer);
-            
-            // Draw the thick lines
-            SDL_FRect lineH_T;
-            lineH_T.w = 900;
-            lineH_T.h = 3;
 
             // highlighting currGame
             if (currGame.first != -1 && currGame.second != -1){
                 SDL_SetRenderDrawColor(gameRenderer, 220, 220, 220, SDL_ALPHA_OPAQUE);
-                SDL_FRect *currGameShader;
-                currGameShader->h = currGameShader->w = 300;
-                currGameShader->x = (int) currGame.first * 300;
-                currGameShader->y = (int) currGame.second * 300;
+                SDL_FRect currGameShader;
+                currGameShader.h = currGameShader.w = 300;
+                currGameShader.x = (int) currGame.first * 300;
+                currGameShader.y = (int) currGame.second * 300;
                 
-                SDL_RenderFillRect(gameRenderer, currGameShader);
-                SDL_RenderRect(gameRenderer, currGameShader);
+                SDL_RenderFillRect(gameRenderer, &currGameShader);
+                SDL_RenderRect(gameRenderer, &currGameShader);
             }
-            
-            // load both textures
+
+            // load both x and o textures
             string pathX = "../assets/x.png";
             SDL_Texture *obj_X = loadTexture(pathX);
 
@@ -106,6 +105,11 @@ class game{
             oRect.h = (float) 100;
             oRect.w = (float) 100;
 
+            // thick lines
+            drawThickL(300, 0, 300, 0);
+            drawThickL(600, 0, 600, 0);
+            drawThickL(0, 300, 0, 300);
+            drawThickL(0, 600, 0, 600);
 
             for (int i=0; i<9; i++){
                 for (int j=0; j<9; j++){
@@ -123,19 +127,33 @@ class game{
 
                     if (gameData9[i][j] == 1){
                         SDL_RenderTexture(gameRenderer, obj_X, nullptr, &oRect);
+                        SDL_Log("rendering X \n");
                     }else if(gameData9[i][j] == 0){
                         SDL_RenderTexture(gameRenderer, obj_O, nullptr, &oRect);
+                        SDL_Log("rendering O \n");
                     }else continue;
                 }
             }
 
+            SDL_RenderLine(gameRenderer, 300-1, 0, 300-1, 0);
+            SDL_RenderLine(gameRenderer, 300+1, 0, 300+1, 0);
+            SDL_RenderLine(gameRenderer, 600-1, 0, 600-1, 0);
+            SDL_RenderLine(gameRenderer, 300+1, 0, 600+1, 0);
+
+            SDL_RenderLine(gameRenderer, 0, 300-1, 0, 300-1);
+            SDL_RenderLine(gameRenderer, 0, 300+1, 0, 300+1);
+
             // draw the matrix (debugging)
-            for(int i=0; i<9; i++){
-                for(int j=0; j<9; j++){
-                    cout<<gameData9[i][j]<<" ";
-                    if (j == 8) cout<<"\n";
-                }
-            }
+            //for(int i=0; i<9; i++){
+                //for(int j=0; j<9; j++){
+                    //cout<<gameData9[i][j]<<" ";
+                    //if (j == 8) cout<<"\n";
+                //}
+            //}
+
+            SDL_DestroyTexture(obj_O);
+            SDL_DestroyTexture(obj_X);
+
             SDL_RenderPresent(gameRenderer);
         }
 
@@ -226,7 +244,6 @@ class game{
             gameRenderer = nullptr;
             SDL_DestroyWindow(gameWindow);
             gameWindow = nullptr;
-            // todo free memory an stuff
         }
 };
 

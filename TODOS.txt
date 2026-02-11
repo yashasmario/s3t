@@ -1,0 +1,4 @@
+-[ ] write winChecker() --maybe a graph solution would be cool
+-[ ] refactor gameData if you have to
+-[ ] game rules, only be able to play in the currGame/hightlighted area
+-[ ] write drawThickL()

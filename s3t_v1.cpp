@@ -1,18 +1,27 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <cstdint>
-#include "iostream"
+#include <iostream>
 #include "cmath"
 #include "string"
-#include "algorithm"
 #include "utility"
-
-using namespace std;
 
 enum class GameState{
     mainMenu,
     playing,
     scoreScreen,
+};
+
+struct Board{
+    int xMask = 0;
+    int oMask = 0;
+    int winner = -1;
+
+    int getSquare(int idx) const{
+        if (xMask & (1 << idx)) return 1;
+        if (oMask & (1 << idx)) return 0;
+        return -1;
+    }
 };
 
 class game{
@@ -28,19 +37,25 @@ class game{
         const int screenHeight = 900;
         
         // index of the current game
-        pair<int, int>currGame = {-1, -1};
+        std::pair<int, int>currBoard = {-1, -1};
 
         uint64_t framerate = 60;
-        
+            
+        // store data in BITWISE
         int move = 0;
-        int gameData9[9][9];
-        int gameData3[3][3];
+        Board subBoards[3][3];
+        Board globalBoard;
+
+        // load both x and o textures
+        std::string pathX = "../assets/x.png";
+        SDL_Texture *obj_X = loadTexture(pathX);
+        std::string pathO = "../assets/o.png";
+        SDL_Texture *obj_O = loadTexture(pathO);
 
         bool running = false;
 
         // priv functions
-        SDL_Texture* loadTexture(string path){
-            // load texture from img
+        SDL_Texture* loadTexture(std::string path){
             SDL_Surface* img = nullptr;
             img = SDL_LoadPNG(path.c_str());
             if (img == nullptr){
@@ -53,27 +68,42 @@ class game{
             // remember to free the textrure memory as well;
             return img_T;
         }
+        
+        bool checkWin(int mask){
+            // possible won states
+            static const int winStates[] = {7, 56, 448, 73, 146, 292, 273, 84};
 
-        // winChecker(int game[3][3])
-        int winChecker(){
-            // -1 for no one has won, 0 for O victory, 1 for X victory, 2 for draw
-
-            return -1;
+            for (int winPattern : winStates){
+                if ((mask & winPattern) == winPattern) return true;
+            }
+            return false;
         }
+
+        void renderBoard(Board board, float size){
+            // scale it down
+            SDL_FRect rect;
+            rect.h = (float) size;
+            rect.w = (float) size;
+            rect.x = 0;
+            rect.y = 0;
             
-        // no clue how to do this more effieciently
-        void drawThickL(float x1, float y1, float x2, float y2){
-            SDL_FRect tl;
-            
+            for (int i=0; i<9; i++){
+                if (board.getSquare(i) == 1){
+                    SDL_RenderTexture(gameRenderer, obj_X, nullptr, &rect);
+                }else if(board.getSquare(i) == 0){
+                    SDL_RenderTexture(gameRenderer, obj_O, nullptr, &rect);
+                }
+            }
+
         }
 
         void renderData(){
             // check win status everytime
             // WIN CONDITION LOGIC:
             
-            if (winChecker() == 0){
+            if (checkWin(globalBoard.xMask)){
                 SDL_Log("O Victory! Congratulations");
-            }else if (winChecker() == 1){
+            }else if (checkWin(globalBoard.oMask)){
                 SDL_Log("X Victory! Congratulations");
             }
 
@@ -81,78 +111,39 @@ class game{
             SDL_SetRenderDrawColor(gameRenderer, 200, 200, 200, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(gameRenderer);
 
-            // highlighting currGame
-            if (currGame.first != -1 && currGame.second != -1){
+            // highlighting currBoard
+            if (currBoard.first != -1 && currBoard.second != -1){
                 SDL_SetRenderDrawColor(gameRenderer, 220, 220, 220, SDL_ALPHA_OPAQUE);
                 SDL_FRect currGameShader;
                 currGameShader.h = currGameShader.w = 300;
-                currGameShader.x = (int) currGame.first * 300;
-                currGameShader.y = (int) currGame.second * 300;
+                currGameShader.x = (int) currBoard.first * 300;
+                currGameShader.y = (int) currBoard.second * 300;
                 
                 SDL_RenderFillRect(gameRenderer, &currGameShader);
                 SDL_RenderRect(gameRenderer, &currGameShader);
             }
 
-            // load both x and o textures
-            string pathX = "../assets/x.png";
-            SDL_Texture *obj_X = loadTexture(pathX);
-
-            string pathO = "../assets/o.png";
-            SDL_Texture *obj_O = loadTexture(pathO);
-
-            // scale it down
-            SDL_FRect oRect;
-            oRect.h = (float) 100;
-            oRect.w = (float) 100;
-
-            // thick lines
-            drawThickL(300, 0, 300, 0);
-            drawThickL(600, 0, 600, 0);
-            drawThickL(0, 300, 0, 300);
-            drawThickL(0, 600, 0, 600);
-
             for (int i=0; i<9; i++){
                 for (int j=0; j<9; j++){
-
                     // drawing grid
                     SDL_SetRenderDrawColor(gameRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-                    //vertical
-                    SDL_RenderLine(gameRenderer, j*100, 0, j*100, 900);
-                    // horizontal
-                    SDL_RenderLine(gameRenderer, 0, j*100, 900, j*100);
-
-                    // rendering o's and x's
-                    oRect.x = 100*j;
-                    oRect.y = 100*i;
-
-                    if (gameData9[i][j] == 1){
-                        SDL_RenderTexture(gameRenderer, obj_X, nullptr, &oRect);
-                        SDL_Log("rendering X \n");
-                    }else if(gameData9[i][j] == 0){
-                        SDL_RenderTexture(gameRenderer, obj_O, nullptr, &oRect);
-                        SDL_Log("rendering O \n");
-                    }else continue;
+                    SDL_RenderLine(gameRenderer, j*100, 0, j*100, 900); // vertical
+                    SDL_RenderLine(gameRenderer, 0, j*100, 900, j*100); // horizontal
                 }
             }
 
-            SDL_RenderLine(gameRenderer, 300-1, 0, 300-1, 0);
-            SDL_RenderLine(gameRenderer, 300+1, 0, 300+1, 0);
-            SDL_RenderLine(gameRenderer, 600-1, 0, 600-1, 0);
-            SDL_RenderLine(gameRenderer, 300+1, 0, 600+1, 0);
+            for (int i=0; i<3; i++){
+                for (int j=0; j<3; j++){
+                    renderBoard(subBoards[i][j], 100);
 
-            SDL_RenderLine(gameRenderer, 0, 300-1, 0, 300-1);
-            SDL_RenderLine(gameRenderer, 0, 300+1, 0, 300+1);
-
-            // draw the matrix (debugging)
-            //for(int i=0; i<9; i++){
-                //for(int j=0; j<9; j++){
-                    //cout<<gameData9[i][j]<<" ";
-                    //if (j == 8) cout<<"\n";
-                //}
-            //}
-
-            SDL_DestroyTexture(obj_O);
-            SDL_DestroyTexture(obj_X);
+                    // for debugging
+                    //for (int k=0; k<9; k++){
+                        //std::cout<<subBoards[i][j].getSquare(k);
+                    //}
+                    //std::cout<<"\n";
+                }
+            }
+            renderBoard(globalBoard, 300);
 
             SDL_RenderPresent(gameRenderer);
         }
@@ -185,36 +176,32 @@ class game{
                 float posX = event.button.x;
                 float posY = event.button.y;
                 int indX = floor((posX*9)/900);
-                int indY = floor((posY*9)/900);
+                int indY = floor((posX*9)/900);
+                //int indY = floor(posY/100);
+                int sub_indX = indX/3;
+                int sub_indY = indY/3;
+                int bitPosition = ((indY%3)*3 + indX%3);
 
                 int turn = move%2 == 0 ? 1 : 0;
 
-                // if (currGame.first == -1 && currGame.second == -1){
-                //    currGame.first = indX%3;
-                //    currGame.second = indY%3;
-                //}
-                
-                
-                // add conditionals to restrict move to currGame
-                if (gameData9[indY][indX] == -1){
-                    gameData9[indY][indX] = turn;
-                    move++;
-                    currGame.first = indX%3;
-                    currGame.second = indY%3;
+                // subBoards[indX][indY] gives subBoard
+                Board subB = subBoards[sub_indX][sub_indY];
+                if (turn){
+                    subB.xMask |= (1 << bitPosition);
+                    SDL_Log("masking x");
+                    std::cout<<subB.xMask<<"\n";
+                }else{
+                    subB.oMask |= (1 << bitPosition);
+                    SDL_Log("masking o");
+                    std::cout<<subB.oMask<<"\n";
                 }
-
+                move++;
                 renderData();
             }
         }
         
-// implement error/exit codes
-
-
     public:
         bool init(){
-            fill(&gameData9[0][0], &gameData9[0][0] + (9*9), -1);
-            fill(&gameData3[0][0], &gameData3[0][0] + (3*3), -1);
-
             if(!SDL_CreateWindowAndRenderer("S3T", screenWidth, screenHeight, SDL_WINDOW_MOUSE_FOCUS, &gameWindow, &gameRenderer)){
                 SDL_Log("couldn't initialize window and renderer! SDL_Error: %s\n", SDL_GetError());
                 return false;
@@ -244,6 +231,10 @@ class game{
             gameRenderer = nullptr;
             SDL_DestroyWindow(gameWindow);
             gameWindow = nullptr;
+            SDL_DestroyTexture(obj_O);
+            SDL_DestroyTexture(obj_X);
+            obj_X = nullptr;
+            obj_O = nullptr;
         }
 };
 
